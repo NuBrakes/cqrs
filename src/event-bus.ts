@@ -1,7 +1,7 @@
-import { Injectable, OnModuleDestroy, Type } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { Observable, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { defer, EMPTY, Observable, Subscription } from 'rxjs';
+import { catchError, filter, switchMap } from 'rxjs/operators';
 import { isFunction } from 'util';
 import { CommandBus } from './command-bus';
 import { EVENTS_HANDLER_METADATA, SAGA_METADATA } from './decorators/constants';
@@ -24,7 +24,10 @@ export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<
 @Injectable()
 export class EventBus<EventBase extends IEvent = IEvent>
   extends ObservableBus<EventBase>
-  implements IEventBus<EventBase>, OnModuleDestroy {
+  implements IEventBus<EventBase>, OnModuleDestroy
+{
+  private readonly logger = new Logger(EventBus.name);
+
   protected getEventName: (event: EventBase) => string;
   protected readonly subscriptions: Subscription[];
 
@@ -65,7 +68,18 @@ export class EventBus<EventBase extends IEvent = IEvent>
 
   bind(handler: IEventHandler<EventBase>, name: string) {
     const stream$ = name ? this.ofEventName(name) : this.subject$;
-    const subscription = stream$.subscribe((event) => handler.handle(event));
+    const subscription = stream$
+      .pipe(
+        switchMap((event) =>
+          defer(() => handler.handle(event)).pipe(
+            catchError((err) => {
+              this.logger.error(err);
+              return EMPTY;
+            }),
+          ),
+        ),
+      )
+      .subscribe();
     this.subscriptions.push(subscription);
   }
 
