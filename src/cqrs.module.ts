@@ -1,4 +1,4 @@
-import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { Global, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { CommandBus } from './command-bus';
 import { EventBus } from './event-bus';
 import { EventPublisher } from './event-publisher';
@@ -6,6 +6,7 @@ import { IEvent } from './interfaces';
 import { QueryBus } from './query-bus';
 import { ExplorerService } from './services/explorer.service';
 
+@Global()
 @Module({
   providers: [CommandBus, QueryBus, EventBus, EventPublisher, ExplorerService],
   exports: [CommandBus, QueryBus, EventBus, EventPublisher],
