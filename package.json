@@ -1,5 +1,5 @@
 {
-  "name": "@nestjs/cqrs",
+  "name": "@nubrakes/nestjs-cqrs",
   "version": "8.0.0",
   "description": "A lightweight CQRS module for Nest framework (node.js)",
   "license": "MIT",
@@ -10,9 +10,9 @@
     "format": "prettier --write \"**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "prepublish:next": "npm run build",
-    "publish:next": "npm publish --access public --tag next",
+    "publish:next": "npm publish --access private --tag next",
     "prepublish:npm": "npm run build",
-    "publish:npm": "npm publish --access public",
+    "publish:npm": "npm publish --access private",
     "prerelease": "npm run build",
     "release": "release-it"
   },
